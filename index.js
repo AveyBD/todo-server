@@ -24,9 +24,18 @@ async function run() {
     console.log("connected to mongodb atlas successful");
     const taskCollection = client.db("ToDo").collection("tasks");
 
-    // api to get all task
+    // api to get all incomplete task
     app.get("/todo", async (req, res) => {
-      const query = {complete: false};
+      const query = { complete: false };
+      const cursor = taskCollection.find(query);
+      const tasks = await cursor.toArray();
+      const reverse = tasks.reverse();
+      res.send(reverse);
+    });
+
+    // api to get all complete task
+    app.get("/done", async (req, res) => {
+      const query = { complete: true };
       const cursor = taskCollection.find(query);
       const tasks = await cursor.toArray();
       const reverse = tasks.reverse();
