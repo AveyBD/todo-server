@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -24,12 +24,31 @@ async function run() {
     console.log("connected to mongodb atlas successful");
     const taskCollection = client.db("ToDo").collection("tasks");
 
-    // api
+    // api to get all task
     app.get("/todo", async (req, res) => {
-      const query = {};
+      const query = {complete: false};
       const cursor = taskCollection.find(query);
       const tasks = await cursor.toArray();
-      res.send(tasks);
+      const reverse = tasks.reverse();
+      res.send(reverse);
+    });
+
+    //  add task api
+    app.post("/todo", async (req, res) => {
+      const task = req.body;
+      const result = await taskCollection.insertOne(task);
+      return res.send({ success: true, result });
+    });
+
+    // complete task api
+    app.put("/todo/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const updateDoc = {
+        $set: { complete: true },
+      };
+      const result = await taskCollection.updateOne(filter, updateDoc);
+      res.send(result);
     });
   } finally {
   }
